@@ -7,31 +7,38 @@ import { UserRound, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function SignInForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
+      // result.ok is always true (HTTP 200); the real failure signal is result.error
+      // which is parsed from the redirect URL's ?error= param by next-auth/react.
+      if (result?.error) {
+        setError('Invalid email or password. Please try again.');
+        return;
+      }
 
-    if (!result?.ok) {
-      setError('Invalid email or password. Please try again.');
-      return;
+      router.push('/dashboard');
+      router.refresh();
+    } catch {
+      // Network or unexpected error
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    router.push('/dashboard');
-    router.refresh();
   }
 
   return (
