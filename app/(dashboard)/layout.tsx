@@ -7,10 +7,15 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Defense-in-depth: verify session at the layout level so a request
-  // that somehow bypasses proxy.ts cannot reach dashboard pages.
   const session = await auth();
   if (!session) redirect("/");
 
-  return <DashboardShell>{children}</DashboardShell>;
+  const userName    = session.user.name    ?? "User";
+  const userInitial = userName.charAt(0).toUpperCase();
+
+  return (
+    <DashboardShell userName={userName} userInitial={userInitial}>
+      {children}
+    </DashboardShell>
+  );
 }

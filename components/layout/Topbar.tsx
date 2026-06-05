@@ -1,7 +1,16 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Monitor, Grid2X2, ChevronDown, LayoutDashboard, Users, Boxes, Receipt, ShoppingCart, Repeat, Wallet, ShieldCheck, Warehouse, BarChart3, DollarSign, Languages, LayoutTemplate, Settings, SlidersHorizontal, FileText } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import {
+  Menu, Monitor, Grid2X2, ChevronDown,
+  LayoutDashboard, Users, Boxes, Receipt, ShoppingCart, Repeat,
+  Wallet, ShieldCheck, Warehouse, BarChart3, DollarSign, Languages,
+  LayoutTemplate, Settings, SlidersHorizontal, FileText,
+  User, KeyRound, LogOut,
+} from 'lucide-react';
 
 const PAGE_META: Record<string, { title: string; icon: React.ReactNode }> = {
   '/dashboard':           { title: 'Dashboard',          icon: <LayoutDashboard size={18} /> },
@@ -32,35 +41,121 @@ const PAGE_META: Record<string, { title: string; icon: React.ReactNode }> = {
 
 type TopbarProps = {
   onToggleSidebar: () => void;
+  userName:        string;
+  userInitial:     string;
 };
 
-export default function Topbar({ onToggleSidebar }: TopbarProps) {
+export default function Topbar({ onToggleSidebar, userName, userInitial }: TopbarProps) {
   const pathname = usePathname();
   const meta = PAGE_META[pathname];
+
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onMouseDown(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  async function handleLogout() {
+    setOpen(false);
+    await signOut({ redirectTo: '/' });
+  }
 
   return (
     <header className="gg-topbar">
       <button className="gg-icon-btn" onClick={onToggleSidebar} title="Toggle sidebar">
         <Menu size={19} />
       </button>
+
       {meta && (
         <div className="gg-topbar-title">
           <span className="gg-page-chip">{meta.icon}</span>
           <span className="gg-breadcrumb">{meta.title}</span>
         </div>
       )}
+
       <div className="gg-topbar-spacer" />
+
       <button className="gg-pos-btn">
         <Monitor size={16} />
         POS
       </button>
+
       <button className="gg-icon-btn">
         <Grid2X2 size={19} />
       </button>
-      <div className="gg-user">
-        <div className="gg-avatar">A</div>
-        <span style={{ fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>admin</span>
-        <ChevronDown size={16} style={{ color: 'var(--gray-400)' }} />
+
+      {/* User menu */}
+      <div ref={containerRef} style={{ position: 'relative' }}>
+        <div className="gg-user" onClick={() => setOpen((v) => !v)}>
+          <div className="gg-avatar">{userInitial}</div>
+          <span style={{ fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>{userName}</span>
+          <ChevronDown
+            size={16}
+            style={{
+              color: 'var(--gray-400)',
+              transition: 'transform .18s',
+              transform: open ? 'rotate(180deg)' : undefined,
+            }}
+          />
+        </div>
+
+        {open && (
+          <div
+            className="gg-menu"
+            style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 50 }}
+          >
+            <Link
+              href="/profile"
+              className="gg-menu-item"
+              onClick={() => setOpen(false)}
+            >
+              <User size={17} />
+              Profile
+            </Link>
+
+            <Link
+              href="/change-password"
+              className="gg-menu-item"
+              onClick={() => setOpen(false)}
+            >
+              <KeyRound size={17} />
+              Change Password
+            </Link>
+
+            <button
+              className="gg-menu-item is-danger"
+              onClick={handleLogout}
+              style={{
+                width: '100%',
+                border: 'none',
+                background: 'transparent',
+                font: 'inherit',
+                textAlign: 'left',
+                cursor: 'pointer',
+              }}
+            >
+              <LogOut size={17} />
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
