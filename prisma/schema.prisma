@@ -35,6 +35,19 @@ model Role {
   updatedAt DateTime @updatedAt
 }
 
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String
+  logo      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  // Soft-delete: null = active, non-null = deleted.
+  // Hard-deletes avoided because products will reference this brand.
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+}
+
 model Warehouse {
   id          Int       @id @default(autoincrement())
   name        String
