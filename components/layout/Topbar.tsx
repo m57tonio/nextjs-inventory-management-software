@@ -15,6 +15,7 @@ import {
 const PAGE_META: Record<string, { title: string; icon: React.ReactNode }> = {
   '/dashboard':           { title: 'Dashboard',          icon: <LayoutDashboard size={18} /> },
   '/products':            { title: 'Products',            icon: <Boxes size={18} /> },
+  '/products/create':     { title: 'Create Product',      icon: <Boxes size={18} /> },
   '/product-categories':  { title: 'Product Categories',  icon: <Boxes size={18} /> },
   '/brands':              { title: 'Brands',              icon: <Boxes size={18} /> },
   '/adjustments':         { title: 'Adjustments',         icon: <SlidersHorizontal size={18} /> },
@@ -57,7 +58,11 @@ export default function Topbar({ onToggleSidebar, userName, userInitial }: Topba
   // Exact-match first; fall back to pattern-matching for dynamic segments.
   const meta =
     PAGE_META[pathname] ??
-    (/^\/warehouse\/\d+\/edit$/.test(pathname)
+    (/^\/products\/\d+\/edit$/.test(pathname)
+      ? { title: 'Edit Product',   icon: <Boxes size={18} /> }
+      : /^\/products\/\d+$/.test(pathname)
+      ? { title: 'View Product',   icon: <Boxes size={18} /> }
+      : /^\/warehouse\/\d+\/edit$/.test(pathname)
       ? { title: 'Edit Warehouse', icon: <Warehouse size={18} /> }
       : /^\/suppliers\/\d+\/edit$/.test(pathname)
       ? { title: 'Edit Supplier',  icon: <Users size={18} /> }
