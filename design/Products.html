@@ -88,7 +88,9 @@
       <div class="gg-card gg-card-pad">
         <div class="gg-table-wrap">
           <table class="gg-table">
-            <thead><tr><th>Product</th><th>Name</th><th>Code</th><th>Brand</th><th>Price</th><th>Product Unit</th><th>In Stock</th><th>Created On</th></tr></thead>
+            <thead><tr><th>Product</th><th>Name</th><th>Code</th><th>Brand</th><th>Price</th><th>Product Unit</th><th>In Stock</th><th>Created On</th>
+            <th style="text-align:right;">Action</th>
+            </tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -137,6 +139,12 @@
       <td><span class="gg-chip-unit">piece</span></td>
       <td class="gg-num">${r[4]}</td>
       <td><span class="gg-chip-time gg-num">${r[5]}<br>${r[6]}</span></td>
+      <td>
+      <div class="gg-row gg-gap-2" style="justify-content:flex-end;">
+        <button class="act-btn act-edit" id="editRow"><i data-lucide="pencil"></i></button>
+        <button class="act-btn act-del"><i data-lucide="trash-2"></i></button>
+      </div>
+    </td>
     </tr>`).join('');
 
   lucide.createIcons();
