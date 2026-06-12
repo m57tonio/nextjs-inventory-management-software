@@ -439,8 +439,11 @@ export async function updatePurchase(
 }
 
 // ── Delete purchase ───────────────────────────────────────────────────────────
-// Pending / Ordered: soft-delete immediately.
-// Received: blocked until Step 8 adds full stock reversal.
+// Pending / Ordered: soft-delete immediately (no stock was moved).
+// Received: reverses all line-item stock in the purchase's warehouse inside a
+// $transaction, then soft-deletes.  If any reversal would drive stock negative
+// (the items were already consumed), the whole transaction rolls back and an
+// error is returned instead.
 
 export async function deletePurchase(id: number): Promise<ActionResult> {
   const denied = await requirePermission();
@@ -448,23 +451,42 @@ export async function deletePurchase(id: number): Promise<ActionResult> {
 
   const purchase = await db.purchase.findFirst({
     where:  { id, deletedAt: null },
-    select: { status: true, reference: true },
+    select: {
+      status:      true,
+      reference:   true,
+      warehouseId: true,
+      items: { select: { productId: true, quantity: true } },
+    },
   });
   if (!purchase) return { error: 'Purchase not found.' };
 
   if (purchase.status === 'Received') {
-    return {
-      error:
-        'Received purchases cannot be deleted directly because the stock that was ' +
-        'added must be reversed first. This will be available once the full delete ' +
-        'flow is implemented.',
-    };
+    try {
+      await db.$transaction(async (tx) => {
+        for (const item of purchase.items) {
+          await applyStockAdjustment(
+            tx,
+            item.productId,
+            purchase.warehouseId,
+            item.quantity,
+            'Subtraction',
+          );
+        }
+        await tx.purchase.update({
+          where: { id },
+          data:  { deletedAt: new Date() },
+        });
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to reverse stock.';
+      return { error: `Cannot delete: ${msg}` };
+    }
+  } else {
+    await db.purchase.update({
+      where: { id },
+      data:  { deletedAt: new Date() },
+    });
   }
-
-  await db.purchase.update({
-    where: { id },
-    data:  { deletedAt: new Date() },
-  });
 
   revalidatePath('/purchases');
   return { success: true };
