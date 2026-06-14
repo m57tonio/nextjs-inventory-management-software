@@ -83,9 +83,8 @@ export async function searchProductsForSale(
 
 // ── Shared validation schemas ─────────────────────────────────────────────────
 
-const STATUSES         = ['Received', 'Ordered', 'Pending'] as const;
-const PAYMENT_STATUSES = ['Paid', 'Unpaid', 'Partial']      as const;
-const PAY_TYPES        = ['Cash', 'Card', 'Cheque', 'Bank Transfer'] as const;
+const STATUSES  = ['Received', 'Ordered', 'Pending']          as const;
+const PAY_TYPES = ['Cash', 'Card', 'Cheque', 'Bank Transfer'] as const;
 const DISC_TYPES       = ['Fixed', 'Percentage']             as const;
 const TAX_TYPES        = ['Inclusive', 'Exclusive']          as const;
 
@@ -185,13 +184,36 @@ export async function createSale(
   const uniqueProductIds = [...new Set(items.map((i) => i.productId))];
   const activeProducts   = await db.product.findMany({
     where:  { id: { in: uniqueProductIds }, deletedAt: null },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (activeProducts.length !== uniqueProductIds.length) {
     return { error: 'One or more selected products could not be found or have been deleted.' };
   }
+  const productNameMap = new Map(activeProducts.map((p) => [p.id, p.name]));
 
-  // 6. Recompute totals server-side — never trust client values
+  // 6. Pre-validate warehouse stock before entering the transaction so the
+  // user gets a product-specific error message (not a raw DB error string).
+  // The $transaction still guards against race conditions, but this gives
+  // a clear, named toast when the cart obviously cannot be fulfilled.
+  if (status === 'Received') {
+    const stockRows = await db.productStock.findMany({
+      where:  { warehouseId: warehouse.id, productId: { in: uniqueProductIds } },
+      select: { productId: true, quantity: true },
+    });
+    const stockMap = new Map(stockRows.map((s) => [s.productId, s.quantity]));
+
+    for (const item of items) {
+      const available = stockMap.get(item.productId) ?? 0;
+      if (item.quantity > available) {
+        const name = productNameMap.get(item.productId) ?? `Product #${item.productId}`;
+        return {
+          error: `Insufficient stock for "${name}": ${available} in warehouse, ${item.quantity} requested.`,
+        };
+      }
+    }
+  }
+
+  // 7. Recompute totals server-side — never trust client values
   const lineInputs = items.map((item) => ({
     netUnitCost:  item.netUnitPrice,
     quantity:     item.quantity,
@@ -300,13 +322,77 @@ export async function updateSale(
 }
 
 // ── Add payment ───────────────────────────────────────────────────────────────
-// Implemented in Step 4.
 
 export async function addSalePayment(
   _prev: ActionResult,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<ActionResult> {
-  return { error: 'Payments not yet implemented — coming in Step 4.' };
+  // 1. Permission
+  const denied = await requirePermission();
+  if (denied) return { error: denied };
+
+  // 2. Parse
+  const saleIdRaw  = formData.get('saleId')      as string;
+  const dateStr    = (formData.get('date')        as string)?.trim();
+  const amountRaw  = formData.get('amount')       as string;
+  const payTypeRaw = (formData.get('paymentType') as string)?.trim();
+  const notes      = (formData.get('notes')       as string)?.trim() || null;
+
+  const saleId = parseInt(saleIdRaw, 10);
+  const amount = parseFloat(amountRaw);
+
+  if (isNaN(saleId) || saleId <= 0)                                  return { error: 'Invalid sale.' };
+  if (!dateStr)                                                        return { error: 'Date is required.' };
+  if (isNaN(amount) || amount <= 0)                                   return { error: 'Amount must be greater than zero.' };
+  if (!PAY_TYPES.includes(payTypeRaw as typeof PAY_TYPES[number]))   return { error: 'Invalid payment type.' };
+
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return { error: 'Invalid date.' };
+
+  // 3. Re-read sale server-side
+  const sale = await db.sale.findFirst({
+    where:  { id: saleId, deletedAt: null },
+    select: { id: true, grandTotal: true },
+  });
+  if (!sale) return { error: 'Sale not found.' };
+
+  const grandTotal = Number(sale.grandTotal);
+
+  // 4. Transaction: insert payment → aggregate new total → update Sale header
+  try {
+    await db.$transaction(async (tx) => {
+      await tx.salePayment.create({
+        data: {
+          saleId,
+          amount:      amount.toFixed(2),
+          paymentType: payTypeRaw as typeof PAY_TYPES[number],
+          date,
+          notes,
+        },
+      });
+
+      const agg = await tx.salePayment.aggregate({
+        where: { saleId },
+        _sum:  { amount: true },
+      });
+
+      const paid          = Math.min(Number(agg._sum.amount ?? 0), grandTotal);
+      const due           = Math.max(0, grandTotal - paid);
+      const paymentStatus = derivePaymentStatus(paid, grandTotal);
+
+      await tx.sale.update({
+        where: { id: saleId },
+        data:  { paid: paid.toFixed(2), due: due.toFixed(2), paymentStatus },
+      });
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to save payment.';
+    return { error: msg };
+  }
+
+  revalidatePath(`/sales/${saleId}/payments`);
+  revalidatePath('/sales');
+  return { success: true };
 }
 
 // ── Delete sale ───────────────────────────────────────────────────────────────

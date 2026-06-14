@@ -71,6 +71,7 @@ export default function Topbar({ onToggleSidebar, userName, userInitial }: Topba
     else if (/^\/users\/\d+\/edit$/.test(pathname))               meta = { title: 'Edit User',             icon: <User size={18} /> };
     else if (/^\/sales\/\d+\/pdf$/.test(pathname))                meta = { title: 'Sale PDF',              icon: <ShoppingCart size={18} /> };
     else if (/^\/sales\/\d+\/edit$/.test(pathname))               meta = { title: 'Edit Sale',             icon: <ShoppingCart size={18} /> };
+    else if (/^\/sales\/\d+\/payments$/.test(pathname))           meta = { title: 'Sale Payments',         icon: <ShoppingCart size={18} /> };
     else if (/^\/sales\/\d+$/.test(pathname))                     meta = { title: 'View Sale',             icon: <ShoppingCart size={18} /> };
     else if (/^\/purchases\/returns\/\d+\/pdf$/.test(pathname))   meta = { title: 'Purchase Return PDF',   icon: <Receipt size={18} /> };
     else if (/^\/purchases\/returns\/\d+\/edit$/.test(pathname))  meta = { title: 'Edit Purchase Return',  icon: <Receipt size={18} /> };
