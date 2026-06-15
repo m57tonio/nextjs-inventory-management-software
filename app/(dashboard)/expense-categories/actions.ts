@@ -93,7 +93,7 @@ export async function deleteExpenseCategory(id: number): Promise<ActionState> {
 
   // Block if any expense records reference this category
   const expenseCount = await db.expense.count({
-    where: { categoryId: id, deletedAt: null },
+    where: { expenseCategoryId: id, deletedAt: null },
   });
   if (expenseCount > 0) {
     return {

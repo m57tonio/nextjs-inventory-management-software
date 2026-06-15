@@ -88,6 +88,7 @@ model Warehouse {
   saleReturns     SaleReturn[]
   transfersFrom   Transfer[]       @relation("TransferFrom")
   transfersTo     Transfer[]       @relation("TransferTo")
+  expenses        Expense[]
 
   @@index([deletedAt])
 }
@@ -651,18 +652,22 @@ model ExpenseCategory {
 }
 
 model Expense {
-  id         Int             @id @default(autoincrement())
-  reference  String          @unique
-  categoryId Int
-  amount     Decimal         @db.Decimal(12, 2)
-  date       DateTime
-  notes      String?         @db.Text
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  deletedAt  DateTime?
+  id                Int             @id @default(autoincrement())
+  reference         String          @unique
+  date              DateTime
+  title             String
+  warehouseId       Int
+  expenseCategoryId Int
+  amount            Decimal         @db.Decimal(12, 2)
+  details           String?         @db.Text
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
 
-  category   ExpenseCategory @relation(fields: [categoryId], references: [id])
+  warehouse  Warehouse       @relation(fields: [warehouseId], references: [id])
+  category   ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
 
-  @@index([categoryId])
+  @@index([warehouseId])
+  @@index([expenseCategoryId])
   @@index([deletedAt])
 }
