@@ -15,7 +15,11 @@ model User {
   password    String
   phoneNumber String?
   image       String?
+  // Role name string kept for JWT compatibility (session.user.role).
+  // roleId is the authoritative FK; role string is synced on save.
   role        String    @default("user")
+  roleId      Int?
+  userRole    Role?     @relation(fields: [roleId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   // Soft-delete: null = active, non-null = deleted.
@@ -23,16 +27,32 @@ model User {
   deletedAt   DateTime?
 
   @@index([deletedAt])
+  @@index([roleId])
 }
 
-// Lookup table for valid staff roles (admin, manager, cashier, user …).
-// The Users create/edit form populates the Role dropdown from this table,
-// not from hardcoded strings, so new roles can be added without code changes.
 model Role {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@index([deletedAt])
+}
+
+// One row per permission granted to a role.
+// permission values are restricted to the PERMISSIONS constant in lib/permissions.ts.
+model RolePermission {
+  roleId     Int
+  permission String
+
+  role       Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permission])
+  @@index([roleId])
 }
 
 model Brand {

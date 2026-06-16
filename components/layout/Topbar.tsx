@@ -37,6 +37,7 @@ const PAGE_META: Record<string, { title: string; icon: React.ReactNode }> = {
   '/suppliers':           { title: 'Suppliers',           icon: <Users size={18} /> },
   '/users':               { title: 'Users',               icon: <Users size={18} /> },
   '/roles':               { title: 'Roles / Permissions', icon: <ShieldCheck size={18} /> },
+  '/roles/create':        { title: 'Create Role',         icon: <ShieldCheck size={18} /> },
   '/warehouse':           { title: 'Warehouse',           icon: <Warehouse size={18} /> },
   '/warehouse/create':    { title: 'Create Warehouse',    icon: <Warehouse size={18} /> },
   '/suppliers/create':    { title: 'Create Supplier',     icon: <Users size={18} /> },
@@ -89,6 +90,7 @@ export default function Topbar({ onToggleSidebar, userName, userInitial }: Topba
     else if (/^\/transfers\/\d+\/edit$/.test(pathname))          meta = { title: 'Edit Transfer',         icon: <Repeat size={18} /> };
     else if (/^\/transfers\/\d+$/.test(pathname))                meta = { title: 'View Transfer',         icon: <Repeat size={18} /> };
     else if (/^\/expenses\/\d+\/edit$/.test(pathname))           meta = { title: 'Edit Expense',          icon: <Wallet size={18} /> };
+    else if (/^\/roles\/\d+\/edit$/.test(pathname))             meta = { title: 'Edit Role',             icon: <ShieldCheck size={18} /> };
   }
 
   const [open, setOpen] = useState(false);

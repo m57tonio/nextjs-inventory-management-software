@@ -38,6 +38,7 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
           name:      `${safeUser.firstName} ${safeUser.lastName}`,
           image:     safeUser.image,
           role:      safeUser.role,
+          roleId:    safeUser.roleId != null ? String(safeUser.roleId) : null,
         }
       },
     }),
@@ -50,15 +51,17 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.id   = user.id
-        token.role = user.role
+        token.id     = user.id
+        token.role   = user.role
+        token.roleId = user.roleId ?? null
       }
       return token
     },
     session({ session, token }) {
       if (session.user) {
-        session.user.id   = token.id   as string
-        session.user.role = token.role as string
+        session.user.id     = token.id     as string
+        session.user.role   = token.role   as string
+        session.user.roleId = (token.roleId as string | null) ?? null
       }
       return session
     },
