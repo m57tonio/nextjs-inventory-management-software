@@ -8,6 +8,7 @@ const CustomersChart   = dynamic(() => import('./CustomersChart'),   { ssr: fals
 
 type YearProduct  = { name: string; revenue: number };
 type MonthProduct = { name: string; quantity: number; revenue: number };
+type TopCustomer  = { name: string; total: number };
 
 type Props = {
   weekLabels:       string[];
@@ -15,6 +16,7 @@ type Props = {
   weekPurchases:    number[];
   yearTopProducts:  YearProduct[];
   monthTopProducts: MonthProduct[];
+  topCustomers:     TopCustomer[];
   monthLabel:       string;
   yearLabel:        string;
 };
@@ -29,6 +31,7 @@ export default function ChartsSection({
   weekPurchases,
   yearTopProducts,
   monthTopProducts,
+  topCustomers,
   monthLabel,
   yearLabel,
 }: Props) {
@@ -102,7 +105,7 @@ export default function ChartsSection({
           </div>
           <div className="gg-card-pad">
             <div style={{ position: 'relative', width: '100%', height: 300 }}>
-              <CustomersChart />
+              <CustomersChart customers={topCustomers} />
             </div>
           </div>
         </div>
