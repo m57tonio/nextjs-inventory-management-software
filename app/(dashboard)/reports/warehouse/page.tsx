@@ -251,12 +251,20 @@ export default async function WarehouseReportsPage({
 
   function pageUrl(p: number) {
     const params = new URLSearchParams();
-    if (whId)           params.set('wh',   String(whId));
+    if (whId)            params.set('wh',   String(whId));
     if (sub !== 'sales') params.set('sub',  sub);
-    if (q)              params.set('q',    q);
+    if (q)               params.set('q',    q);
     params.set('per',  String(perPage));
     params.set('page', String(Math.max(1, Math.min(p, totalPages))));
     return `/reports/warehouse?${params}`;
+  }
+
+  function exportUrl() {
+    const params = new URLSearchParams();
+    if (whId)            params.set('wh',  String(whId));
+    if (sub !== 'sales') params.set('sub', sub);
+    if (q)               params.set('q',   q);
+    return `/api/reports/warehouse/export?${params}`;
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -308,9 +316,9 @@ export default async function WarehouseReportsPage({
         <button className="btn-icon-gold" title="Filter" type="button">
           <Filter size={18} />
         </button>
-        <button className="btn-excel" type="button" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+        <a href={exportUrl()} className="btn-excel" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
           EXCEL
-        </button>
+        </a>
       </div>
 
       {/* Table */}
