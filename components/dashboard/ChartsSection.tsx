@@ -2,11 +2,36 @@
 
 import dynamic from 'next/dynamic';
 
-const WeekChart = dynamic(() => import('./WeekChart'), { ssr: false });
+const WeekChart        = dynamic(() => import('./WeekChart'),        { ssr: false });
 const TopProductsChart = dynamic(() => import('./TopProductsChart'), { ssr: false });
-const CustomersChart = dynamic(() => import('./CustomersChart'), { ssr: false });
+const CustomersChart   = dynamic(() => import('./CustomersChart'),   { ssr: false });
 
-export default function ChartsSection() {
+type YearProduct  = { name: string; revenue: number };
+type MonthProduct = { name: string; quantity: number; revenue: number };
+
+type Props = {
+  weekLabels:       string[];
+  weekSales:        number[];
+  weekPurchases:    number[];
+  yearTopProducts:  YearProduct[];
+  monthTopProducts: MonthProduct[];
+  monthLabel:       string;
+  yearLabel:        string;
+};
+
+function fmtMoney(n: number) {
+  return '$ ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export default function ChartsSection({
+  weekLabels,
+  weekSales,
+  weekPurchases,
+  yearTopProducts,
+  monthTopProducts,
+  monthLabel,
+  yearLabel,
+}: Props) {
   return (
     <div className="dash-2col">
 
@@ -18,14 +43,14 @@ export default function ChartsSection() {
           </div>
           <div className="gg-card-pad">
             <div style={{ position: 'relative', width: '100%', height: 300 }}>
-              <WeekChart />
+              <WeekChart labels={weekLabels} sales={weekSales} purchases={weekPurchases} />
             </div>
           </div>
         </div>
 
         <div className="gg-card">
           <div className="gg-card-head">
-            <span className="gg-card-title">Top Selling Products (May)</span>
+            <span className="gg-card-title">Top Selling Products ({monthLabel})</span>
           </div>
           <div className="gg-card-pad" style={{ paddingTop: 0 }}>
             <table className="gg-table">
@@ -36,7 +61,23 @@ export default function ChartsSection() {
                   <th style={{ textAlign: 'right' }}>Grand Total</th>
                 </tr>
               </thead>
-              <tbody style={{ minHeight: 90 }} />
+              <tbody>
+                {monthTopProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} style={{ textAlign: 'center', color: 'var(--gray-400)', padding: '24px 0' }}>
+                      No sales this month.
+                    </td>
+                  </tr>
+                ) : (
+                  monthTopProducts.map((p, i) => (
+                    <tr key={i}>
+                      <td className="gg-td-strong">{p.name}</td>
+                      <td className="gg-num">{p.quantity}</td>
+                      <td className="gg-num" style={{ textAlign: 'right' }}>{fmtMoney(p.revenue)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
             </table>
           </div>
         </div>
@@ -46,18 +87,18 @@ export default function ChartsSection() {
       <div className="dash-col">
         <div className="gg-card">
           <div className="gg-card-head">
-            <span className="gg-card-title">Top Selling Products (2026)</span>
+            <span className="gg-card-title">Top Selling Products ({yearLabel})</span>
           </div>
           <div className="gg-card-pad">
             <div style={{ position: 'relative', width: '100%', height: 340 }}>
-              <TopProductsChart />
+              <TopProductsChart products={yearTopProducts} />
             </div>
           </div>
         </div>
 
         <div className="gg-card">
           <div className="gg-card-head">
-            <span className="gg-card-title">Top 5 Customers (May)</span>
+            <span className="gg-card-title">Top 5 Customers ({monthLabel})</span>
           </div>
           <div className="gg-card-pad">
             <div style={{ position: 'relative', width: '100%', height: 300 }}>
