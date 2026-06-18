@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Boxes, SlidersHorizontal, FileText,
   Receipt, ShoppingCart, Repeat, Wallet, Users, ShieldCheck,
   Warehouse, BarChart3, DollarSign, Languages, LayoutTemplate,
-  Settings, ChevronRight, Search, Truck, User,
+  Settings, ChevronRight, Search, Truck, User, Monitor,
 } from 'lucide-react';
 
 type NavChild = {
@@ -27,6 +27,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, permission: 'Manage Dashboard' },
+  { label: 'POS',       href: '/pos',       icon: <Monitor />,       permission: 'Manage Pos Screen'  },
   {
     label: 'Products',
     icon: <Boxes />,
