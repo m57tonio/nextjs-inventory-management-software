@@ -836,6 +836,51 @@ button { font-family: inherit; }
 .stock-hint svg { width: 11px; height: 11px; }
 .pcard .qty-tag { position: absolute; bottom: 9px; left: 9px; background: rgba(0,0,0,.52); color: #fff; }
 
+/* held-orders modal (Step 4) */
+.pos-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; display: flex; align-items: center; justify-content: center; padding: var(--sp-6); }
+.pos-modal { background: var(--surface); border-radius: var(--r-xl); box-shadow: var(--shadow-xl); width: 560px; max-width: 100%; max-height: 80vh; display: flex; flex-direction: column; }
+.pos-modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-5) var(--sp-6); border-bottom: 1px solid var(--gray-200); flex-shrink: 0; }
+.pos-modal-head h2 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); margin: 0; }
+.pos-modal-close { width: 34px; height: 34px; border: none; background: var(--gray-100); border-radius: var(--r-sm); color: var(--gray-500); display: grid; place-items: center; cursor: pointer; }
+.pos-modal-close:hover { background: var(--gray-200); color: var(--ink); }
+.pos-modal-body { flex: 1; overflow-y: auto; padding: var(--sp-5) var(--sp-6); }
+.held-empty { text-align: center; padding: var(--sp-10) 0; color: var(--gray-400); font-size: 14px; }
+.held-row { display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); border: 1px solid var(--gray-200); border-radius: var(--r-md); }
+.held-row + .held-row { margin-top: var(--sp-3); }
+.held-info { flex: 1; min-width: 0; }
+.held-customer { font-weight: 600; color: var(--ink); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.held-meta { color: var(--gray-500); font-size: 13px; margin-top: 3px; }
+.held-total { font-family: var(--font-display); font-weight: 700; color: var(--gold-700); font-size: 16px; white-space: nowrap; }
+.held-actions { display: flex; gap: var(--sp-2); flex-shrink: 0; }
+.btn-resume  { height: 36px; padding: 0 18px; border-radius: var(--r-sm); background: var(--success); color: #fff; border: none; font-weight: 600; font-size: 13px; font-family: var(--font-display); cursor: pointer; transition: filter .15s; }
+.btn-resume:hover  { filter: brightness(.93); }
+.btn-discard { height: 36px; padding: 0 18px; border-radius: var(--r-sm); background: transparent; color: var(--danger); border: 1px solid var(--danger-bg); font-weight: 600; font-size: 13px; font-family: var(--font-display); cursor: pointer; }
+.btn-discard:hover { background: var(--danger-bg); }
+
+/* pay-now modal (Step 5) */
+.pay-total { text-align: center; padding: var(--sp-4) 0 var(--sp-5); }
+.pay-total .lbl { color: var(--gray-500); font-size: 13px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; margin-bottom: var(--sp-2); }
+.pay-total .amt { font-family: var(--font-display); font-size: 38px; font-weight: 700; color: var(--gold-700); letter-spacing: -.02em; }
+.pay-types { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); margin-bottom: var(--sp-5); }
+.pay-type-btn { height: 48px; border: 2px solid var(--gray-200); border-radius: var(--r-md); background: var(--gray-50); color: var(--gray-600); font-weight: 600; font-size: 13px; font-family: var(--font-body); cursor: pointer; transition: all .15s; }
+.pay-type-btn:hover { border-color: var(--gold-300); color: var(--ink); background: var(--gold-50); }
+.pay-type-btn.is-active { border-color: var(--gold-600); background: var(--gold-50); color: var(--gold-700); }
+.pay-field { margin-bottom: var(--sp-4); }
+.pay-field label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-600); margin-bottom: var(--sp-2); letter-spacing: .02em; }
+.pay-field input { width: 100%; height: 58px; border: 1px solid var(--gray-200); border-radius: var(--r-md); padding: 0 var(--sp-5); font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--ink); outline: none; box-sizing: border-box; }
+.pay-field input:focus { border-color: var(--gold-400); box-shadow: var(--ring); }
+.pay-change-row { display: flex; align-items: center; justify-content: space-between; background: var(--success-bg); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); margin-bottom: var(--sp-2); }
+.pay-change-row .lbl { color: var(--success-fg); font-weight: 600; font-size: 14px; }
+.pay-change-row .val { font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--success-fg); }
+.pay-err { display: flex; align-items: flex-start; gap: var(--sp-2); background: var(--danger-bg); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); margin-top: var(--sp-4); color: var(--danger-fg); font-size: 13px; line-height: 1.45; }
+.pay-err svg { flex-shrink: 0; margin-top: 1px; }
+.pos-modal-foot { display: flex; gap: var(--sp-3); padding: var(--sp-5) var(--sp-6); border-top: 1px solid var(--gray-200); flex-shrink: 0; }
+.btn-cancel  { flex: 1; height: 52px; border: 1px solid var(--gray-200); border-radius: var(--r-md); background: var(--gray-50); color: var(--gray-600); font-weight: 600; font-size: 15px; font-family: var(--font-display); cursor: pointer; }
+.btn-cancel:hover { background: var(--gray-100); }
+.btn-confirm { flex: 2; height: 52px; border: none; border-radius: var(--r-md); background: var(--success); color: #fff; font-weight: 600; font-size: 16px; font-family: var(--font-display); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--sp-2); transition: filter .15s; }
+.btn-confirm:hover:not(:disabled) { filter: brightness(.93); }
+.btn-confirm:disabled { opacity: .65; cursor: not-allowed; filter: none; }
+
 /* POS dropdown (customer / warehouse selectors) */
 .pos-dropdown { position: absolute; top: calc(100% + 6px); left: 0; min-width: 100%; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-lg); border: 1px solid var(--gray-200); z-index: 50; padding: var(--sp-2); max-height: 280px; overflow-y: auto; }
 .pos-dropdown-item { display: block; width: 100%; padding: var(--sp-2) var(--sp-4); border: none; background: transparent; text-align: left; font-family: var(--font-body); font-size: 14px; color: var(--ink); cursor: pointer; border-radius: var(--r-sm); }
